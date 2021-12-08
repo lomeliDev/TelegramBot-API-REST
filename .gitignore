@@ -15,6 +15,7 @@
 .env.test.local
 .env.production.local
 .env
+env.py
 
 # debug
 npm-debug.log*
@@ -26,6 +27,9 @@ package.lock
 package-lock.json
 src/__pycache__
 
+__pycache__
+__pycache__*
+*__pycache__
 db.db
 sessions/*.session
 sessions/*.session-journal

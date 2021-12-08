@@ -1,9 +1,6 @@
 #!/bin/env python3
 
-import os
-import sys
-import time
-import sqlite3
+import os, sys, time, sqlite3
 
 re = "\033[1;31m"
 gr = "\033[1;32m"
@@ -25,7 +22,6 @@ class Setup:
         return result
 
     def initDatabase(self):
-        self.run_query('CREATE TABLE IF NOT EXISTS "configs" ( "id" INTEGER NOT NULL UNIQUE, "sessions" TEXT NOT NULL, "port" TEXT NOT NULL, PRIMARY KEY("id" AUTOINCREMENT));')
         self.run_query('CREATE TABLE IF NOT EXISTS "proxies" ( "id" INTEGER NOT NULL UNIQUE, "ip" TEXT NOT NULL, "port" TEXT NOT NULL, "user" TEXT NOT NULL, "password" TEXT NOT NULL,"status"	INTEGER NOT NULL, PRIMARY KEY("id" AUTOINCREMENT));')
         self.run_query('CREATE TABLE IF NOT EXISTS "accounts" ("id"	INTEGER NOT NULL, "api_id"	TEXT NOT NULL UNIQUE, "api_hash"	TEXT NOT NULL UNIQUE, "phone"	TEXT NOT NULL UNIQUE, "alias"	TEXT NOT NULL UNIQUE,"status"	INTEGER NOT NULL, PRIMARY KEY("id" AUTOINCREMENT));')
 
