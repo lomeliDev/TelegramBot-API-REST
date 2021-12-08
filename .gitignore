@@ -26,3 +26,7 @@ package.lock
 package-lock.json
 src/__pycache__
 
+db.db
+sessions/*.session
+sessions/*.session-journal
+

@@ -4,7 +4,12 @@ cython
 numpy
 pandas
 telethon
+tulir-telethon
 requests
 configparser
 PyMySQL
+socks
+PySocks
 flask
+asyncio
+pysqlite3
