@@ -84,7 +84,8 @@ def accounts(jsonify, request):
                 campaigns_accounts.last_used, 
                 accounts.phone, 
                 accounts.alias,
-                campaigns_accounts.status
+                campaigns_accounts.status,
+                campaigns_accounts."join"
             FROM
                 campaigns_accounts
                 INNER JOIN
@@ -103,7 +104,8 @@ def accounts(jsonify, request):
                 'last_used': row[2],
                 'phone': row[3],
                 'alias': row[4],
-                'status': row[5]
+                'status': row[5],
+                'join': row[6]
             }
             campaigns.append(data)
         cursorClose()

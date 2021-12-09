@@ -242,8 +242,8 @@ def scrapper(jsonify, request):
         for row in accounts:
             check = run_query_count('SELECT id FROM campaigns_accounts WHERE campaign_id=? and account_id=?', (id_campaign, row['id']))
             if check == 0:
-                query = 'INSERT INTO campaigns_accounts VALUES(NULL, ?, ?, ?, ?)';
-                run_query(query, (id_campaign, row['id'],0,1,))
+                query = 'INSERT INTO campaigns_accounts VALUES(NULL, ?, ?, ?, ?, ?)';
+                run_query(query, (id_campaign, row['id'],0,0,1,))
                 cursorClose()
 
         query = 'UPDATE campaigns SET status=? where id=?'
