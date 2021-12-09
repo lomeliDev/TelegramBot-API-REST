@@ -5,30 +5,30 @@ from telethon.sync import TelegramClient
 from telethon.tl.types import UserStatusOnline, UserStatusRecently, UserStatusOffline, UserStatusLastWeek, UserStatusLastMonth
 from datetime import datetime, timedelta
 
-cursorLoginGlobal = None
+cursorScrapperGlobal = None
 db_name = 'db.db'
 
 def cursorClose():
-    global cursorLoginGlobal
+    global cursorScrapperGlobal
     try:
-        cursorLoginGlobal.close()
+        cursorScrapperGlobal.close()
     except:
         pass
 
 def run_query(query, parameters = ()):
-    global cursorLoginGlobal
+    global cursorScrapperGlobal
     with sqlite3.connect(db_name) as conn:
         cursor = conn.cursor()
-        cursorLoginGlobal = cursor
+        cursorScrapperGlobal = cursor
         result = cursor.execute(query, parameters)
         conn.commit()
     return result   
 
 def run_query_count( query, parameters = ()):
-    global cursorLoginGlobal
+    global cursorScrapperGlobal
     with sqlite3.connect(db_name) as conn:
         cursor = conn.cursor()
-        cursorLoginGlobal = cursor
+        cursorScrapperGlobal = cursor
         result = cursor.execute(query, parameters)
         rows = cursor.fetchall()
         result = len (rows)
@@ -40,7 +40,7 @@ def run_query_count( query, parameters = ()):
     return result
 
 def _scrapper(account, channel, id_campaign, photo, limit, usernameCheck):
-    global cursorLoginGlobal
+    global cursorScrapperGlobal
     channel = channel.replace("@", "")
     channel = channel.replace("/", "")
 
@@ -185,7 +185,7 @@ def _scrapper(account, channel, id_campaign, photo, limit, usernameCheck):
 
 def scrapper(jsonify, request):
     print('scrapper')
-    global cursorLoginGlobal
+    global cursorScrapperGlobal
     try:
         cursorClose()
 
@@ -199,7 +199,7 @@ def scrapper(jsonify, request):
             if index >= 0:
                 return jsonify({'status': 422, 'message': 'Just pass the user', 'payload': {}})
         except:
-            return jsonify({'status': 422, 'message': 'Pass the channel or group', 'payload': {}})
+            return jsonify({'status': 422, 'message': 'Send all parameters', 'payload': {}})
 
         db_accounts = run_query('SELECT * FROM accounts WHERE status=1 ORDER BY RANDOM() LIMIT 1', ())
         account = None
@@ -239,7 +239,7 @@ def scrapper(jsonify, request):
 
 def status(jsonify, request):
     print('status')
-    global cursorLoginGlobal
+    global cursorScrapperGlobal
     try:
         cursorClose()
 
