@@ -3,6 +3,7 @@ import src.login as login
 import src.scrapper as scrapper
 import src.proxis as proxis
 import src.accounts as accounts
+import src.campaigns as campaigns
 
 app = Flask(__name__)
 ClientGlobalLogin = None
@@ -70,7 +71,32 @@ def login_Accounts():
 # Accounts Delete Route
 @app.route('/accounts', methods=['DELETE'])
 def login_AccountsDelete():
-    return accounts.delete(jsonify, request)    
+    return accounts.delete(jsonify, request)
+
+# Campaigns List Route
+@app.route('/campaigns', methods=['GET'])
+def login_Campaigns():
+    return campaigns.all(jsonify, request)
+
+# Campaigns Accounts Route
+@app.route('/campaigns-accounts', methods=['POST'])
+def login_CampaignsAccounts():
+    return campaigns.accounts(jsonify, request)
+
+# Campaigns Users Route
+@app.route('/campaigns-users', methods=['POST'])
+def login_CampaignsUsers():
+    return campaigns.users(jsonify, request)
+
+# Campaigns Delete Route
+@app.route('/campaigns', methods=['DELETE'])
+def login_CampaignsDelete():
+    return campaigns.delete(jsonify, request)
+
+# Campaigns Pause Route
+@app.route('/campaigns', methods=['PUT'])
+def login_CampaignsPause():
+    return campaigns.pause(jsonify, request)
 
 def start(PORT):
     print('Server running in port : ' + str(PORT))
