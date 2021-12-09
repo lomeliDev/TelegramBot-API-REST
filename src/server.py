@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import src.login as login
 import src.scrapper as scrapper
+import src.proxis as proxis
 
 app = Flask(__name__)
 ClientGlobalLogin = None
@@ -34,6 +35,31 @@ def login_Scrapper():
 @app.route('/scrapper-details', methods=['POST'])
 def login_ScrapperDetails():
     return scrapper.status(jsonify, request)
+
+# Proxis List Route
+@app.route('/proxis', methods=['GET'])
+def login_Proxis():
+    return proxis.all(jsonify, request)
+
+# Proxis Add Route
+@app.route('/proxis', methods=['POST'])
+def login_ProxisAdd():
+    return proxis.add(jsonify, request)
+
+# Proxis Delete Route
+@app.route('/proxis', methods=['DELETE'])
+def login_ProxisDelete():
+    return proxis.delete(jsonify, request)
+
+# Proxis Check Route
+@app.route('/proxis-check', methods=['GET'])
+def login_ProxisCheck():
+    return proxis.test(jsonify, request)
+
+# Proxis Import Route
+@app.route('/proxis', methods=['PUT'])
+def login_ProxisImport():
+    return proxis.importProxis(jsonify, request)    
 
 def start(PORT):
     print('Server running in port : ' + str(PORT))

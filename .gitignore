@@ -34,3 +34,8 @@ db.db
 sessions/*.session
 sessions/*.session-journal
 
+tmp/*.csv
+
+glade8a.glade
+gtk.py
+a.py
