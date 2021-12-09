@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 import src.login as login
 import src.scrapper as scrapper
 import src.proxis as proxis
@@ -97,6 +97,16 @@ def login_CampaignsDelete():
 @app.route('/campaigns', methods=['PUT'])
 def login_CampaignsPause():
     return campaigns.pause(jsonify, request)
+
+# Campaigns Export Route
+@app.route('/campaigns-export/<int:campaign_id>', methods=['GET'])
+def login_CampaignsExport(campaign_id):
+    return campaigns.export(jsonify, request, make_response, int(campaign_id))
+
+# Campaigns Import Route
+@app.route('/campaigns-import', methods=['POST'])
+def login_CampaignsImport():
+    return campaigns.importCampaigns(jsonify, request)
 
 def start(PORT):
     print('Server running in port : ' + str(PORT))

@@ -226,4 +226,120 @@ def pause(jsonify, request):
     except Exception as e:
         return jsonify({'status': 422, 'message': str(e), 'payload': {}})
     except :
-        return jsonify({'status': 422, 'message': 'An error occurred', 'payload': {}})  
+        return jsonify({'status': 422, 'message': 'An error occurred', 'payload': {}})
+
+def export(jsonify, request, make_response, id):
+    print('export')
+    global cursorCampaignsGlobal
+    try:
+        cursorClose()
+
+        check_proxy = run_query_count('SELECT * FROM campaigns where id=?', (id,))
+
+        if check_proxy == 0:
+            return jsonify({'status': 422, 'message': 'The campaign does not exist', 'payload': {}})
+
+        SQL = """
+            SELECT
+                users.id, 
+                users.account_id, 
+                users.uuid, 
+                users.access_hash, 
+                users.username, 
+                users.name, 
+                users.phone, 
+                users.message, 
+                users.last_used, 
+                users.status, 
+                accounts.alias, 
+                accounts.phone AS account_phone
+            FROM
+                users
+                LEFT JOIN accounts
+                ON users.account_id = accounts.id
+            WHERE
+                users.campaign_id = ?
+        """
+        db_campaigns = run_query(SQL, (id,))
+        dataExport = "campaign_id;account_id;uuid;access_hash;username;name;phone;message;last_used;status;alias;account_phone\n"
+        for row in db_campaigns:
+            dataExport = dataExport + str(id) + ";"
+            dataExport = dataExport + str(row[1]) + ";"
+            dataExport = dataExport + str(row[2]) + ";"
+            dataExport = dataExport + str(row[3]) + ";"
+            dataExport = dataExport + str(row[4]) + ";"
+            dataExport = dataExport + str(row[5]) + ";"
+            dataExport = dataExport + str(row[6]) + ";"
+            dataExport = dataExport + str(row[7]) + ";"
+            dataExport = dataExport + str(row[8]) + ";"
+            dataExport = dataExport + str(row[9]) + ";"
+            dataExport = dataExport + str(row[10]) + ";"
+            dataExport = dataExport + str(row[11]) + "\n"
+        cursorClose()
+
+        output = make_response(dataExport)
+        output.headers["Content-Disposition"] = "attachment; filename=export_campaign_.csv"
+        output.headers["Content-type"] = "text/csv"
+        return output
+
+    except Exception as e:
+        return jsonify({'status': 422, 'message': str(e), 'payload': {}})
+    except :
+        return jsonify({'status': 422, 'message': 'An error occurred', 'payload': {}})
+
+def importCampaigns(jsonify, request):
+    print('importCampaigns')
+    global cursorCampaignsGlobal
+    try:
+        cursorClose()
+
+        letters = string.ascii_lowercase
+        nameFile = ''.join(random.choice(letters) for i in range(64)) + ".csv"
+
+        delimiter = ";"
+
+        try:
+            id = int(request.values.get('id'))
+            uploaded_file = request.files['file']
+        except:
+            return jsonify({'status': 422, 'message': 'Send all parameters', 'payload': {}})
+
+        check_proxy = run_query_count('SELECT * FROM campaigns where id=?', (id,))
+
+        if check_proxy == 0:
+            return jsonify({'status': 422, 'message': 'The campaign does not exist', 'payload': {}})
+
+        if uploaded_file.filename != '':
+            uploaded_file.save("./tmp/" + nameFile)
+
+            file1 = open("./tmp/" + nameFile, 'r')
+            Lines = file1.readlines()
+            file1.close()
+
+            if os.path.exists("./tmp/" + nameFile):
+                os.remove("./tmp/" + nameFile)
+
+            x = 0
+            for line in Lines:
+                x = x + 1
+                if x == 1:
+                    continue
+
+                line = line.replace("\n", "")
+                line = line.split(delimiter)
+
+                search_id = run_query_count('SELECT id FROM users WHERE campaign_id=? AND uuid=?', (id, str(line[2])))
+
+                if search_id == 0:
+                    query = 'INSERT INTO users VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                    run_query(query, (id, 0, line[2], line[3], line[4], line[5], line[6], "", 1, 0,))
+                    cursorClose()
+
+            return jsonify({'status': 200, 'message': 'The accounts were imported', 'payload': {}})
+        else:
+            return jsonify({'status': 422, 'message': 'error, upload csv file', 'payload': {}})        
+        
+    except Exception as e:
+        return jsonify({'status': 422, 'message': str(e), 'payload': {}})
+    except :
+        return jsonify({'status': 422, 'message': 'An error occurred', 'payload': {}})       
