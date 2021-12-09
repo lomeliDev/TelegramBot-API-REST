@@ -43,6 +43,12 @@ def closeCheckLogin(id):
     run_query(query, (3,id,))
     cursorClose()
 
+def changeStatusAccountsCampaigns(id, status):
+    cursorClose()
+    query = 'UPDATE campaigns_accounts SET status=? where account_id=?'
+    run_query(query, (status,id,))
+    cursorClose()
+
 def _checkLogin(data):
     try:
         db_proxie = run_query('SELECT * FROM proxies WHERE status=1 ORDER BY RANDOM() LIMIT 1', ())
@@ -62,25 +68,31 @@ def _checkLogin(data):
             client = TelegramClient("sessions/" + str(data[3]), str(data[1]), str(data[2]), proxy=("socks5", str(proxie[0]), int(proxie[1]), True, proxie[2], proxie[3]), loop=loop)
         except Exception as e:
             closeCheckLogin(int(data[0]))
+            changeStatusAccountsCampaigns(int(data[0]), 0)
             return
         except:
             closeCheckLogin(int(data[0]))
+            changeStatusAccountsCampaigns(int(data[0]), 0)
             return
 
         client.connect()
         query = 'UPDATE accounts SET status=? where id=?'
         if not client.is_user_authorized():
             run_query(query, (2,int(data[0]),))
+            changeStatusAccountsCampaigns(int(data[0]), 2)
         else:
             run_query(query, (1,int(data[0]),))
+            changeStatusAccountsCampaigns(int(data[0]), 1)
 
         cursorClose()
         client.disconnect()
     except Exception as e:
         closeCheckLogin(int(data[0]))
+        changeStatusAccountsCampaigns(int(data[0]), 0)
         pass
     except:
         closeCheckLogin(int(data[0]))
+        changeStatusAccountsCampaigns(int(data[0]), 0)
         pass
 
 def checkLogins(jsonify, request):
