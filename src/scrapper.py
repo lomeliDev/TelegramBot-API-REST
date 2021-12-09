@@ -130,6 +130,10 @@ def _scrapper(account, channel, id_campaign, photo, limit, usernameCheck):
             access_hash = ''
             username = ''
             name = ''
+            phone = ''
+
+            if user.phone != None:
+                phone = user.phone
             
             if user.username != None:
                 username = user.username
@@ -150,7 +154,8 @@ def _scrapper(account, channel, id_campaign, photo, limit, usernameCheck):
                 'id': id,
                 'access_hash': access_hash,
                 'username': username,
-                'name': name
+                'name': name,
+                'phone': phone
             }
             
             clients.append(dataClient)
@@ -160,8 +165,8 @@ def _scrapper(account, channel, id_campaign, photo, limit, usernameCheck):
         for user in clients:
             search_id = run_query_count('SELECT id FROM users WHERE campaign_id=? AND uuid=?', (id_campaign, user['id']))
             if search_id == 0:
-                query = 'INSERT INTO users VALUES(NULL, ?, ?, ?, ?, ?, ?)';
-                run_query(query, (id_campaign,user['id'],user['access_hash'],user['username'],user['name'],0,))
+                query = 'INSERT INTO users VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                run_query(query, (id_campaign, 0, user['id'], user['access_hash'], user['username'], user['name'], user['phone'], "", 0, 0,))
                 cursorClose()
 
         total_users = run_query_count('SELECT id FROM users WHERE campaign_id=?', (id_campaign,))
@@ -192,8 +197,10 @@ def scrapper(jsonify, request):
         try:
             channel = request.json['channel']
             campaign = request.json['campaign']
+            group = request.json['group']
             photo = request.json['photo']
             limit = int(request.json['limit'])
+            seconds = str(request.json['seconds'])
             username = request.json['username']
             index = channel.find("http")
             if index >= 0:
@@ -212,9 +219,9 @@ def scrapper(jsonify, request):
 
         total_campaigns = run_query_count('SELECT id FROM campaigns WHERE name=?', (campaign,))
 
-        query = 'INSERT INTO campaigns VALUES(NULL, ?, ?, ?, ?, ?)';
+        query = 'INSERT INTO campaigns VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?)';
         if total_campaigns == 0:
-            run_query(query, (campaign, 0, 0, 0, 1,))
+            run_query(query, (campaign, group, 0, 0, 0, 0, seconds, 1,))
             cursorClose()
 
         id_campaign = None
@@ -222,6 +229,22 @@ def scrapper(jsonify, request):
         for row in db_campaign:
             id_campaign = int(row[0])
         cursorClose()
+
+        accounts = []
+        db_accounts = run_query('SELECT id FROM accounts WHERE status=1', ())
+        for row in db_accounts:
+            data = {
+                'id' : row[0]
+            }
+            accounts.append(data)
+        cursorClose()
+
+        for row in accounts:
+            check = run_query_count('SELECT id FROM campaigns_accounts WHERE campaign_id=? and account_id=?', (id_campaign, row['id']))
+            if check == 0:
+                query = 'INSERT INTO campaigns_accounts VALUES(NULL, ?, ?, ?, ?)';
+                run_query(query, (id_campaign, row['id'],0,1,))
+                cursorClose()
 
         query = 'UPDATE campaigns SET status=? where id=?'
         run_query(query, (0,id_campaign,))
@@ -259,10 +282,13 @@ def status(jsonify, request):
 
         data = {
             'name': campaign[1],
-            'total_users': campaign[2],
-            'completed_users': campaign[3],
-            'failed_users': campaign[4],
-            'status': campaign[5],
+            'group': campaign[2],
+            'total_users': campaign[3],
+            'completed_users': campaign[4],
+            'failed_users': campaign[5],
+            'last_used': campaign[6],
+            'seconds': campaign[7],
+            'status': campaign[8]
         }
 
         return jsonify({'status': 200, 'message': 'Status campaign', 'payload': data})

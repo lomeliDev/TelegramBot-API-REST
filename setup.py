@@ -1,6 +1,10 @@
 #!/bin/env python3
 
-import os, sys, time, sqlite3
+import os, sys, time
+try:
+    import sqlite3
+except:
+    pass
 
 re = "\033[1;31m"
 gr = "\033[1;32m"
@@ -11,21 +15,25 @@ class Setup:
     db_name = 'db.db'
 
     def run_query(self, query, parameters=()):
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            result = cursor.execute(query, parameters)
-            conn.commit()
-            try:
-                cursor.close()
-            except:
-                pass
-        return result
+        try:
+            with sqlite3.connect(self.db_name) as conn:
+                cursor = conn.cursor()
+                result = cursor.execute(query, parameters)
+                conn.commit()
+                try:
+                    cursor.close()
+                except:
+                    pass
+            return result
+        except:
+            pass
 
     def initDatabase(self):
         self.run_query('CREATE TABLE IF NOT EXISTS "proxies" ( "id" INTEGER NOT NULL UNIQUE, "ip" TEXT NOT NULL, "port" TEXT NOT NULL, "user" TEXT NOT NULL, "password" TEXT NOT NULL,"status"	INTEGER NOT NULL, PRIMARY KEY("id" AUTOINCREMENT));')
         self.run_query('CREATE TABLE IF NOT EXISTS "accounts" ("id"	INTEGER NOT NULL, "api_id"	TEXT NOT NULL UNIQUE, "api_hash"	TEXT NOT NULL UNIQUE, "phone"	TEXT NOT NULL UNIQUE, "alias"	TEXT NOT NULL UNIQUE,"status"	INTEGER NOT NULL, PRIMARY KEY("id" AUTOINCREMENT));')
-        self.run_query('CREATE TABLE IF NOT EXISTS "campaigns" ("id" INTEGER NOT NULL UNIQUE, "name" TEXT NOT NULL, "total_users" INTEGER NOT NULL, "completed_users" INTEGER NOT NULL, "failed_users" INTEGER NOT NULL, "status" INTEGER NOT NULL,PRIMARY KEY("id" AUTOINCREMENT));')
-        self.run_query('CREATE TABLE IF NOT EXISTS "users" ("id" INTEGER NOT NULL UNIQUE, "campaign_id"	INTEGER NOT NULL,"uuid"	TEXT ,"access_hash"	TEXT,"username"	TEXT , "name" TEXT, "status" INTEGER NOT NULL,PRIMARY KEY("id" AUTOINCREMENT));')
+        self.run_query('CREATE TABLE IF NOT EXISTS "campaigns" ("id" INTEGER NOT NULL UNIQUE, "name" TEXT NOT NULL, "group" TEXT NOT NULL, "total_users" INTEGER NOT NULL, "completed_users" INTEGER NOT NULL, "failed_users" INTEGER NOT NULL, "last_used" INTEGER NOT NULL, "seconds" INTEGER NOT NULL, "status" INTEGER NOT NULL,PRIMARY KEY("id" AUTOINCREMENT));')
+        self.run_query('CREATE TABLE IF NOT EXISTS "campaigns_accounts" ("id" INTEGER NOT NULL UNIQUE, "campaign_id" INTEGER NOT NULL, "account_id" INTEGER NOT NULL, "last_used" INTEGER NOT NULL, "status" INTEGER NOT NULL, PRIMARY KEY("id" AUTOINCREMENT));')
+        self.run_query('CREATE TABLE IF NOT EXISTS "users" ("id" INTEGER NOT NULL UNIQUE, "campaign_id"	INTEGER NOT NULL, "account_id" INTEGER NOT NULL, "uuid"	TEXT ,"access_hash"	TEXT,"username"	TEXT , "name" TEXT, "phone" TEXT, "message" TEXT, "last_used" INTEGER NOT NULL, "status" INTEGER NOT NULL,PRIMARY KEY("id" AUTOINCREMENT));')
 
     def clear(self):
         os.system('clear')
