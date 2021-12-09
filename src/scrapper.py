@@ -166,7 +166,7 @@ def _scrapper(account, channel, id_campaign, photo, limit, usernameCheck):
             search_id = run_query_count('SELECT id FROM users WHERE campaign_id=? AND uuid=?', (id_campaign, user['id']))
             if search_id == 0:
                 query = 'INSERT INTO users VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-                run_query(query, (id_campaign, 0, user['id'], user['access_hash'], user['username'], user['name'], user['phone'], "", 0, 0,))
+                run_query(query, (id_campaign, 0, user['id'], user['access_hash'], user['username'], user['name'], user['phone'], "", 1, 0,))
                 cursorClose()
 
         total_users = run_query_count('SELECT id FROM users WHERE campaign_id=?', (id_campaign,))
@@ -219,9 +219,9 @@ def scrapper(jsonify, request):
 
         total_campaigns = run_query_count('SELECT id FROM campaigns WHERE name=?', (campaign,))
 
-        query = 'INSERT INTO campaigns VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?)';
+        query = 'INSERT INTO campaigns VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         if total_campaigns == 0:
-            run_query(query, (campaign, group, 0, 0, 0, 0, seconds, 1,))
+            run_query(query, (campaign, group, 0, 0, 0, 0, seconds, 0, 1,))
             cursorClose()
 
         id_campaign = None
@@ -288,7 +288,8 @@ def status(jsonify, request):
             'failed_users': campaign[5],
             'last_used': campaign[6],
             'seconds': campaign[7],
-            'status': campaign[8]
+            'pause': campaign[8],
+            'status': campaign[9]
         }
 
         return jsonify({'status': 200, 'message': 'Status campaign', 'payload': data})
