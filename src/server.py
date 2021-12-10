@@ -108,6 +108,11 @@ def login_CampaignsExport(campaign_id):
 def login_CampaignsImport():
     return campaigns.importCampaigns(jsonify, request)
 
+# Campaigns Join Route
+@app.route('/campaigns-joined', methods=['POST'])
+def login_CampaignsJoin():
+    return campaigns.joined(jsonify, request)
+
 def start(PORT):
     print('Server running in port : ' + str(PORT))
     app.run(debug=True, port=PORT)

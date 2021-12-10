@@ -1,6 +1,8 @@
 #!/bin/env python3
 
-import os, sqlite3, sys, socks, threading, socket, requests, string, random
+import os, sqlite3, sys, socks, threading, socket, requests, string, random, asyncio
+from telethon.sync import TelegramClient
+from telethon.tl.functions.channels import JoinChannelRequest
 
 cursorCampaignsGlobal = None
 db_name = 'db.db'
@@ -9,6 +11,7 @@ def cursorClose():
     global cursorCampaignsGlobal
     try:
         cursorCampaignsGlobal.close()
+        cursorCampaignsGlobal = None
     except:
         pass
 
@@ -345,3 +348,125 @@ def importCampaigns(jsonify, request):
         return jsonify({'status': 422, 'message': str(e), 'payload': {}})
     except :
         return jsonify({'status': 422, 'message': 'An error occurred', 'payload': {}})       
+
+def _statusJoined(id, status):
+    global cursorCampaignsGlobal
+    cursorClose()
+    query = 'UPDATE campaigns_accounts SET "join"=? where id=?'
+    run_query(query, (status,id,))
+    cursorClose()
+
+def _joined(id, data):
+    try:
+        global cursorCampaignsGlobal
+
+        cursorClose()
+        db_proxie = run_query('SELECT * FROM proxies WHERE status=1 ORDER BY RANDOM() LIMIT 1', ())
+        proxie = ['', '', '', '']
+        for row in db_proxie:
+            proxie[0] = str(row[1])
+            proxie[1] = str(row[2])
+            proxie[2] = str(row[3])
+            proxie[3] = str(row[4])
+        cursorClose()
+
+        client = None
+
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            client = TelegramClient("sessions/" + str(data[3]), str(data[1]), str(data[2]), proxy=("socks5", str(proxie[0]), int(proxie[1]), True, proxie[2], proxie[3]), loop=loop)
+        except Exception as e:
+            _statusJoined(int(data[6]), 2)
+            return
+        except:
+            _statusJoined(int(data[6]), 2)
+            return
+
+        client.connect()
+        query = 'UPDATE campaigns_accounts SET "join"=? where id=?'
+        if not client.is_user_authorized():
+            run_query(query, (2,int(data[6]),))
+            cursorClose()
+            return
+
+        try:
+            client(JoinChannelRequest(str(data[7])))
+            _statusJoined(int(data[6]), 1)
+        except Exception as e:
+            _statusJoined(int(data[6]), 2)
+        except:
+            _statusJoined(int(data[6]), 2)
+
+        cursorClose()
+        client.disconnect()
+
+    except Exception as e:
+        _statusJoined(int(data[6]), 2)
+    except:
+        _statusJoined(int(data[6]), 2)
+
+def joined(jsonify, request):
+    print('joined')
+    global cursorCampaignsGlobal
+    try:
+        cursorClose()
+
+        try:
+            id = int(request.json['id'])
+        except:
+            return jsonify({'status': 422, 'message': 'Send all parameters', 'payload': {}})
+
+        check_proxy = run_query_count('SELECT * FROM campaigns where id=?', (id,))
+
+        if check_proxy == 0:
+            return jsonify({'status': 422, 'message': 'The campaign does not exist', 'payload': {}})
+
+        db_proxie = run_query('SELECT * FROM proxies WHERE status=1 ORDER BY RANDOM() LIMIT 1', ())
+        proxie = ['', '', '', '']
+        for row in db_proxie:
+            proxie[0] = str(row[1])
+            proxie[1] = str(row[2])
+            proxie[2] = str(row[3])
+            proxie[3] = str(row[4])
+        cursorClose()
+
+        if int(proxie[1]) == 0:
+            return jsonify({'status': 422, 'message': 'To use the bot, you need at least one active proxy', 'payload': {}})
+
+        SQL = """
+            SELECT
+                accounts.*, 
+                campaigns_accounts.id as account_id, 
+                campaigns."group"
+            FROM
+                campaigns_accounts
+                INNER JOIN
+                accounts
+                ON 
+                    campaigns_accounts.account_id = accounts.id
+                INNER JOIN
+                campaigns
+                ON 
+                    campaigns_accounts.campaign_id = campaigns.id
+            WHERE
+                campaigns_accounts.campaign_id = ? 
+                AND campaigns_accounts."join" = 0
+                AND campaigns_accounts.status = 1
+        """
+
+        db_accounts = run_query(SQL, (id,))
+        accounts = []
+        for row in db_accounts:
+            accounts.append(row)
+        cursorClose()
+        
+        for row in accounts:
+            t = threading.Thread(target=_joined, args=(id,row,))
+            t.start()
+        
+        return jsonify({'status': 200, 'message': 'Accounts are joining the campaign group', 'payload': {}})
+    except Exception as e:
+        return jsonify({'status': 422, 'message': str(e), 'payload': {}})
+    except :
+        return jsonify({'status': 422, 'message': 'An error occurred while parsing the accounts', 'payload': {}})
