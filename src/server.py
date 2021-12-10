@@ -9,6 +9,12 @@ import src.join as join
 app = Flask(__name__)
 ClientGlobalLogin = None
 
+def returnResponse(data):
+    try:
+        return data, int(data.json['status'])    
+    except:
+        return data
+
 # Home Route
 @app.route('/', methods=['GET'])
 def index():
@@ -22,117 +28,123 @@ def ping():
 # Check Logins Route
 @app.route('/login/check-logins', methods=['GET'])
 def login_CheckLogins():
-    return login.checkLogins(jsonify, request)
+    return returnResponse(login.checkLogins(jsonify, request))
 
 # Status Check Logins Route
 @app.route('/login/status-logins', methods=['GET'])
 def login_StatusLogins():
-    return login.StatusLogins(jsonify, request)
+    return returnResponse(login.StatusLogins(jsonify, request))
 
 # Scrapper Route
 @app.route('/scrapper', methods=['POST'])
 def login_Scrapper():
-    return scrapper.scrapper(jsonify, request)
+    return returnResponse(scrapper.scrapper(jsonify, request))
 
 # Scrapper Route
 @app.route('/scrapper-details', methods=['POST'])
 def login_ScrapperDetails():
-    return scrapper.status(jsonify, request)
+    return returnResponse(scrapper.status(jsonify, request))
 
 # Proxis List Route
 @app.route('/proxis', methods=['GET'])
 def login_Proxis():
-    return proxis.all(jsonify, request)
+    return returnResponse(proxis.all(jsonify, request))
 
 # Proxis Add Route
 @app.route('/proxis', methods=['POST'])
 def login_ProxisAdd():
-    return proxis.add(jsonify, request)
+    return returnResponse(proxis.add(jsonify, request))
 
 # Proxis Delete Route
 @app.route('/proxis', methods=['DELETE'])
 def login_ProxisDelete():
-    return proxis.delete(jsonify, request)
+    return returnResponse(proxis.delete(jsonify, request))
 
 # Proxis Check Route
 @app.route('/proxis-check', methods=['GET'])
 def login_ProxisCheck():
-    return proxis.test(jsonify, request)
+    return returnResponse(proxis.test(jsonify, request))
 
 # Proxis Import Route
 @app.route('/proxis', methods=['PUT'])
 def login_ProxisImport():
-    return proxis.importProxis(jsonify, request)
+    return returnResponse(proxis.importProxis(jsonify, request))
 
 # Accounts List Route
 @app.route('/accounts', methods=['GET'])
 def login_Accounts():
-    return accounts.all(jsonify, request)
+    return returnResponse(accounts.all(jsonify, request))
 
 # Accounts Delete Route
 @app.route('/accounts', methods=['DELETE'])
 def login_AccountsDelete():
-    return accounts.delete(jsonify, request)
+    return returnResponse(accounts.delete(jsonify, request))
 
 # Accounts Export Route
 @app.route('/accounts-export', methods=['GET'])
 def login_AccountsExport():
-    return accounts.export(jsonify, request, make_response)
+    return returnResponse(accounts.export(jsonify, request, make_response))
 
 # Accounts Import Route
 @app.route('/accounts-import', methods=['POST'])
 def login_AccountsImport():
-    return accounts.importAccounts(jsonify, request)
+    return returnResponse(accounts.importAccounts(jsonify, request))
 
 # Accounts Errors Route
 @app.route('/accounts-errors', methods=['GET'])
 def login_AccountsErrors():
-    return accounts.errors(jsonify, request)
+    return returnResponse(accounts.errors(jsonify, request))
 
 # Campaigns List Route
 @app.route('/campaigns', methods=['GET'])
 def login_Campaigns():
-    return campaigns.all(jsonify, request)
+    return returnResponse(campaigns.all(jsonify, request))
 
 # Campaigns Accounts Route
 @app.route('/campaigns-accounts', methods=['POST'])
 def login_CampaignsAccounts():
-    return campaigns.accounts(jsonify, request)
+    return returnResponse(campaigns.accounts(jsonify, request))
 
 # Campaigns Users Route
 @app.route('/campaigns-users', methods=['POST'])
 def login_CampaignsUsers():
-    return campaigns.users(jsonify, request)
+    return returnResponse(campaigns.users(jsonify, request))
 
 # Campaigns Delete Route
 @app.route('/campaigns', methods=['DELETE'])
 def login_CampaignsDelete():
-    return campaigns.delete(jsonify, request)
+    return returnResponse(campaigns.delete(jsonify, request))
 
 # Campaigns Pause Route
 @app.route('/campaigns', methods=['PUT'])
 def login_CampaignsPause():
-    return campaigns.pause(jsonify, request)
+    return returnResponse(campaigns.pause(jsonify, request))
 
 # Campaigns Export Route
 @app.route('/campaigns-export/<int:campaign_id>', methods=['GET'])
 def login_CampaignsExport(campaign_id):
-    return campaigns.export(jsonify, request, make_response, int(campaign_id))
+    return returnResponse(campaigns.export(jsonify, request, make_response, int(campaign_id)))
 
 # Campaigns Import Route
 @app.route('/campaigns-import', methods=['POST'])
 def login_CampaignsImport():
-    return campaigns.importCampaigns(jsonify, request)
+    return returnResponse(campaigns.importCampaigns(jsonify, request))
 
 # Campaigns Join Route
 @app.route('/campaigns-joined', methods=['POST'])
 def login_CampaignsJoin():
-    return campaigns.joined(jsonify, request)
+    return returnResponse(campaigns.joined(jsonify, request))
 
 # Join Users to campaign Route
 @app.route('/join', methods=['POST'])
 def login_Join():
-    return join.join(jsonify, request)
+    return returnResponse(join.join(jsonify, request))
+
+# Test Code Response Route
+@app.route('/test-code', methods=['GET'])
+def login_Test():
+    data = jsonify({'status': 500, 'message': 'OK', 'payload': {}})
+    return returnResponse(data)
 
 def start(PORT):
     print('Server running in port : ' + str(PORT))
