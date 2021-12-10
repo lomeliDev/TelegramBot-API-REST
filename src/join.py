@@ -174,13 +174,20 @@ def _statusJoin(id, status, message, check, campaign_id):
             run_query(query, (failed_users,campaign_id,))
             cursorClose()
 
-def _account(id, campaign_id, status):
+def _account(id, campaign_id, status, error, check):
     cursorClose()
-    query = 'UPDATE campaigns_accounts SET "status"=? where account_id=?'
-    run_query(query, (status,id,))
-    cursorClose()
-    query = 'UPDATE accounts SET "status"=? where id=?'
-    run_query(query, (status,id,))
+
+    if check:
+        query = 'UPDATE campaigns_accounts SET "status"=? where account_id=?'
+        run_query(query, (status,id,))
+        cursorClose()
+        query = 'UPDATE accounts SET "status"=? where id=?'
+        run_query(query, (status,id,))
+        cursorClose()
+
+    currentTime = int(datetime.datetime.now().timestamp() * 1000)
+    query = 'INSERT INTO accounts_errors VALUES(NULL, ?, ?, ?)';
+    run_query(query, (id,error,currentTime,))
     cursorClose()
 
 def _join(id, data):
@@ -258,6 +265,7 @@ def _join(id, data):
             _statusJoin(int(user[0]), 1, "", True, id)
         except PeerFloodError:
             _statusJoin(int(user[0]), 2, "PeerFloodError", False, id)
+            _account(int(data[0]), id, 3, "PeerFloodError", False)
         except UserPrivacyRestrictedError:
             _statusJoin(int(user[0]), 2, "UserPrivacyRestrictedError", False, id)
         except BotsTooMuchError:
@@ -268,19 +276,22 @@ def _join(id, data):
             _statusJoin(int(user[0]), 2, "ChannelInvalidError", False, id)
         except ChannelPrivateError:
             _statusJoin(int(user[0]), 2, "ChannelPrivateError", False, id)
+            _account(int(data[0]), id, 3, "ChannelPrivateError", False)
         except ChatAdminRequiredError:
             _statusJoin(int(user[0]), 2, "ChatAdminRequiredError", False, id)
+            _account(int(data[0]), id, 3, "ChatAdminRequiredError", False)
         except ChatInvalidError:
             _statusJoin(int(user[0]), 2, "ChatInvalidError", False, id)
         except ChatWriteForbiddenError:
             _statusJoin(int(user[0]), 2, "ChatWriteForbiddenError", False, id)
+            _account(int(data[0]), id, 3, "ChatWriteForbiddenError", False)
         except InputUserDeactivatedError:
             _statusJoin(int(user[0]), 2, "InputUserDeactivatedError", True, id)
         except UsersTooMuchError:
             _statusJoin(int(user[0]), 2, "UsersTooMuchError", False, id)
         except UserBannedInChannelError:
             _statusJoin(int(user[0]), 2, "UserBannedInChannelError", False, id)
-            _account(int(data[0]), id, 3)
+            _account(int(data[0]), id, 3, "UserBannedInChannelError", True)
         except UserBlockedError:
             _statusJoin(int(user[0]), 2, "UserBlockedError", True, id)
         except UserBotError:

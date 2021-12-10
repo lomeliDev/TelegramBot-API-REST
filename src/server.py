@@ -74,6 +74,21 @@ def login_Accounts():
 def login_AccountsDelete():
     return accounts.delete(jsonify, request)
 
+# Accounts Export Route
+@app.route('/accounts-export', methods=['GET'])
+def login_AccountsExport():
+    return accounts.export(jsonify, request, make_response)
+
+# Accounts Import Route
+@app.route('/accounts-import', methods=['POST'])
+def login_AccountsImport():
+    return accounts.importAccounts(jsonify, request)
+
+# Accounts Errors Route
+@app.route('/accounts-errors', methods=['GET'])
+def login_AccountsErrors():
+    return accounts.errors(jsonify, request)
+
 # Campaigns List Route
 @app.route('/campaigns', methods=['GET'])
 def login_Campaigns():
