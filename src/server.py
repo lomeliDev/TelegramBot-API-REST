@@ -4,6 +4,7 @@ import src.scrapper as scrapper
 import src.proxis as proxis
 import src.accounts as accounts
 import src.campaigns as campaigns
+import src.join as join
 
 app = Flask(__name__)
 ClientGlobalLogin = None
@@ -112,6 +113,11 @@ def login_CampaignsImport():
 @app.route('/campaigns-joined', methods=['POST'])
 def login_CampaignsJoin():
     return campaigns.joined(jsonify, request)
+
+# Join Users to campaign Route
+@app.route('/join', methods=['POST'])
+def login_Join():
+    return join.join(jsonify, request)
 
 def start(PORT):
     print('Server running in port : ' + str(PORT))
