@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, make_response
+from flask import Flask, jsonify, request, make_response, send_from_directory
 import src.login as login
 import src.scrapper as scrapper
 import src.proxis as proxis
@@ -6,7 +6,7 @@ import src.accounts as accounts
 import src.campaigns as campaigns
 import src.join as join
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/')
 ClientGlobalLogin = None
 
 def returnResponse(data):
@@ -15,8 +15,28 @@ def returnResponse(data):
     except:
         return data
 
+# JS files Route
+@app.route('/js/<path:path>')
+def send_js(path):
+    return send_from_directory('../public/js/', path)
+
+# CSS files Route
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory('../public/css/', path)
+
+# Images files Route
+@app.route('/img/<path:path>')
+def send_img(path):
+    return send_from_directory('../public/img/', path)
+
+# HTML files Route
+@app.route('/')
+def send_html():
+    return send_from_directory('../public/', 'index.html')
+
 # Home Route
-@app.route('/', methods=['GET'])
+@app.route('/hello', methods=['GET'])
 def index():
     return jsonify({'response': 'Hello world!'})
 
