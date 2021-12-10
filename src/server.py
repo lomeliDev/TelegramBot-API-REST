@@ -151,6 +151,11 @@ def login_Test():
     data = jsonify({'status': 500, 'message': 'OK', 'payload': {}})
     return returnResponse(data)
 
+# Error 404 Route
+@app.errorhandler(404)
+def handle_404(e):
+    return returnResponse(jsonify({'status': 404, 'message': 'Error 404', 'payload': {}}))
+
 def start(PORT):
     print('Server running in port : ' + str(PORT))
     app.run(debug=True, port=PORT)
