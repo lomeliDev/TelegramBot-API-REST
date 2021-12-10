@@ -95,6 +95,11 @@ def login_AccountsImport():
 def login_AccountsErrors():
     return returnResponse(accounts.errors(jsonify, request))
 
+# Accounts Delete Errors Route
+@app.route('/accounts-delete-errors', methods=['DELETE'])
+def login_AccountsDeleteErrors():
+    return returnResponse(accounts.deleteErrors(jsonify, request))
+
 # Campaigns List Route
 @app.route('/campaigns', methods=['GET'])
 def login_Campaigns():

@@ -194,3 +194,35 @@ def errors(jsonify, request):
         return jsonify({'status': 422, 'message': str(e), 'payload': {}})
     except :
         return jsonify({'status': 422, 'message': 'An error occurred', 'payload': {}})
+
+
+def deleteErrors(jsonify, request):
+    print('deleteErrors')
+    global cursorAccountsGlobal
+    try:
+        cursorClose()
+
+        db_accounts = run_query('SELECT id FROM accounts WHERE status=3', ())
+        accounts = []
+        for row in db_accounts:
+            data = {
+                'id': row[0]
+            }
+            accounts.append(data)
+        cursorClose()
+
+        for row in accounts:
+            run_query('DELETE FROM accounts WHERE id = ?', (row['id'],))
+            cursorClose()
+            run_query('DELETE FROM accounts_errors WHERE account_id = ?', (row['id'],))
+            cursorClose()
+            run_query('DELETE FROM campaigns_accounts WHERE account_id = ?', (row['id'],))
+            cursorClose()
+
+        cursorClose()
+
+        return jsonify({'status': 200, 'message': 'Accounts Data', 'payload': {}})
+    except Exception as e:
+        return jsonify({'status': 422, 'message': str(e), 'payload': {}})
+    except :
+        return jsonify({'status': 422, 'message': 'An error occurred', 'payload': {}})
